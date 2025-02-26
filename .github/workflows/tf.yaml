@@ -65,15 +65,27 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4  
+        uses: actions/checkout@v4  # ✅ Upgrade to v4
+
+      - name: Setup Terraform  # ✅ Add Terraform setup
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.0  # Update to latest stable version
 
       - name: Terraform Plan for Test
-        working-directory: tf-mods-version  # Set the working directory to the 'terraform' folder
+        working-directory: tf-mods-version  # Ensure correct working directory
         id: plan-test
         run: |
           terraform init
-          terraform plan -out=plan-test  # Removed the -var-file argument
+          terraform plan -out=plan-test
           terraform show -no-color plan-test > plan-test.txt
+      
+      - name: Upload Terraform Plan Artifact for Test
+        uses: actions/upload-artifact@v4  # ✅ Upgrade to v4
+        with:
+          name: plan-test
+          path: tf-mods-version/plan-test.txt  # ✅ Ensure correct path
+
       
       - name: Upload Terraform Plan Artifact for Test
         uses: actions/upload-artifact@v4  
