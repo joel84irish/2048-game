@@ -110,7 +110,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
         with:
-          region: ${{ env.AWS_DEFAULT_REGION }}  # Explicit region for ECR login
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}  # Ensure region is explicitly passed
 
       - name: Install Trivy
         run: |
