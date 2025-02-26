@@ -136,12 +136,15 @@ jobs:
       - name: Log in to Amazon ECR (for Trivy scan)
         uses: aws-actions/amazon-ecr-login@v2
         id: ecr-login
+        with:
+          region: ${{ env.AWS_DEFAULT_REGION }}  # Explicitly set the region here
 
       - name: Scan Docker Image for Vulnerabilities with Trivy
         run: |
           IMAGE_URI="${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest"
           echo "Scanning image: $IMAGE_URI"
           trivy image --no-progress --skip-update $IMAGE_URI
+
 
 
   terraform_apply:
