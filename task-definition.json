@@ -1,8 +1,9 @@
-"taskDefinitionArn": "arn:aws:ecs:eu-west-2:489877524855:task-definition/tm:2",
+{
+    "taskDefinitionArn": "arn:aws:ecs:us-west-2:980921749029:task-definition/2048:1",
     "containerDefinitions": [
         {
             "name": "2048",
-            "image": "980921749029.dkr.ecr.us-west-2.amazonaws.com/2048",
+            "image": "980921749029.dkr.ecr.us-west-2.amazonaws.com/2048:latest:latest",
             "cpu": 0,
             "portMappings": [
                 {
@@ -22,11 +23,11 @@
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
-                    "awslogs-group": "/ecs/tm",
+                    "awslogs-group": "/ecs/2048",
                     "mode": "non-blocking",
                     "awslogs-create-group": "true",
                     "max-buffer-size": "25m",
-                    "awslogs-region": "eu-west-2",
+                    "awslogs-region": "us-west-2",
                     "awslogs-stream-prefix": "ecs"
                 },
                 "secretOptions": []
@@ -34,11 +35,11 @@
             "systemControls": []
         }
     ],
-    "family": "2048-task",
-    "taskRoleArn": "arn:aws:iam::489877524855:role/ecsTaskExecutionRole",
-    "executionRoleArn": "arn:aws:iam::489877524855:role/ecsTaskExecutionRole",
+    "family": "2048",
+    "taskRoleArn": "arn:aws:iam::980921749029:role/ecs_task_role",
+    "executionRoleArn": "arn:aws:iam::980921749029:role/ecs_execution_role",
     "networkMode": "awsvpc",
-    "revision": 2,
+    "revision": 1,
     "volumes": [],
     "status": "ACTIVE",
     "requiresAttributes": [
@@ -87,7 +88,20 @@
         "cpuArchitecture": "ARM64",
         "operatingSystemFamily": "LINUX"
     },
-    "registeredAt": "2024-09-13T18:23:22.476Z",
-    "registeredBy": "arn:aws:iam::489877524855:user/walid-test-threat-modeler",
-    "tags": []
+    "registeredAt": "2025-02-26T19:35:57.607Z",
+    "registeredBy": "arn:aws:iam::980921749029:user/Terraform",
+    "tags": [
+        {
+            "key": "Project",
+            "value": "tm"
+        },
+        {
+            "key": "Environment",
+            "value": "joel-sandbox"
+        },
+        {
+            "key": "Owner",
+            "value": "jo"
+        }
+    ]
 }
