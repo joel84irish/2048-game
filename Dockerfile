@@ -1,5 +1,4 @@
-This Dockerfile defines how I packaged the application into a Docker image:
-# Use the base Ubuntu image
+
 FROM ubuntu:22.04
 
 # Install Nginx and other necessary packages
