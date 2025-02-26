@@ -1,7 +1,7 @@
 variable "project_name" {
   description = "The name of the project"
   type        = string
-  default     = "tm"
+  default     = "2048"
 }
 
 variable "domain_name" {
@@ -12,7 +12,7 @@ variable "domain_name" {
 
 variable "ecr_repo_url" {
   description = "The URL of the ECR repository"
-  default     = "980921749029.dkr.ecr.us-west-2.amazonaws.com/threat-model"
+  default     = "980921749029.dkr.ecr.us-west-2.amazonaws.com/2048:latest"
   type        = string
 }
 
@@ -25,7 +25,7 @@ variable "aws_region" {
 variable "container_port" {
   description = "The port the container exposes"
   type        = number
-  default     = 3000
+  default     = 80
 }
 
 variable "desired_count" {
