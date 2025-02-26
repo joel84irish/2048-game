@@ -135,7 +135,9 @@ jobs:
 
       - name: Scan Docker Image for Vulnerabilities with Trivy
         run: |
-          trivy image ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest"
+          echo "Scanning image: $IMAGE_URI"
+          trivy image $IMAGE_URI
 
   terraform_apply:
     name: 'Terraform Apply'
