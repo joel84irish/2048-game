@@ -67,13 +67,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4  # ✅ Upgrade to v4
 
-      - name: Setup Terraform  # ✅ Add Terraform setup
+      - name: Configure AWS Credentials  # ✅ Ensures AWS credentials are set correctly
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      - name: Setup Terraform  # ✅ Ensures Terraform is installed
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.6.0  # Update to latest stable version
+          terraform_version: 1.6.0
 
       - name: Terraform Plan for Test
-        working-directory: tf-mods-version  # Ensure correct working directory
+        working-directory: tf-mods-version
         id: plan-test
         run: |
           terraform init
@@ -84,14 +91,8 @@ jobs:
         uses: actions/upload-artifact@v4  # ✅ Upgrade to v4
         with:
           name: plan-test
-          path: tf-mods-version/plan-test.txt  # ✅ Ensure correct path
+          path: tf-mods-version/plan-test.txt
 
-      
-      - name: Upload Terraform Plan Artifact for Test
-        uses: actions/upload-artifact@v4  
-        with:
-          name: plan-test
-          path: tf-mods-version/plan-test.txt  #Ensure correct path
 
 
   terraform_apply:
