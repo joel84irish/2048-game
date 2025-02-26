@@ -2,7 +2,7 @@
     "containerDefinitions": [
         {
             "name": "2048",
-            "image": "980921749029.dkr.ecr.us-west-2.amazonaws.com/2048:latest",
+            "image": "980921749029.dkr.ecr.us-west-2.amazonaws.com/2048",
             "cpu": 0,
             "portMappings": [
                 {
@@ -34,7 +34,7 @@
             "systemControls": []
         }
     ],
-    "family": "tm",
+    "family": "2048-task",
     "taskRoleArn": "arn:aws:iam::489877524855:role/ecsTaskExecutionRole",
     "executionRoleArn": "arn:aws:iam::489877524855:role/ecsTaskExecutionRole",
     "networkMode": "awsvpc",
