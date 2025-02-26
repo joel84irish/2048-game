@@ -1,13 +1,11 @@
-{
-    "taskDefinitionArn": "arn:aws:ecs:us-west-2:766261352911:task-definition/2048_game:13",
+"taskDefinitionArn": "arn:aws:ecs:eu-west-2:489877524855:task-definition/tm:2",
     "containerDefinitions": [
         {
-            "name": "game",
-            "image": "public.ecr.aws/d0x5f8d4/2048-game:latest",
-            "cpu": 0,
-            "portMappings": [
+            "name": "2048",
+            "image": "980921749029.dkr.ecr.us-west-2.amazonaws.com/threat-model:latest",
+            "cpu": 0,980921749029.dkr.ecr.us-west-2.amazonaws.com/2048:latest            "portMappings": [
                 {
-                    "name": "2048",
+                    "name": "2048-80-tcp",
                     "containerPort": 80,
                     "hostPort": 80,
                     "protocol": "tcp",
@@ -23,11 +21,11 @@
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
-                    "awslogs-group": "/ecs/2048_game",
+                    "awslogs-group": "/ecs/tm",
                     "mode": "non-blocking",
                     "awslogs-create-group": "true",
                     "max-buffer-size": "25m",
-                    "awslogs-region": "us-west-2",
+                    "awslogs-region": "eu-west-2",
                     "awslogs-stream-prefix": "ecs"
                 },
                 "secretOptions": []
@@ -35,11 +33,11 @@
             "systemControls": []
         }
     ],
-    "family": "2048_game",
-    "taskRoleArn": "arn:aws:iam::766261352911:role/ecsTaskRole",
-    "executionRoleArn": "arn:aws:iam::766261352911:role/ecsTaskExecutionRole",
+    "family": "tm",
+    "taskRoleArn": "arn:aws:iam::489877524855:role/ecsTaskExecutionRole",
+    "executionRoleArn": "arn:aws:iam::489877524855:role/ecsTaskExecutionRole",
     "networkMode": "awsvpc",
-    "revision": 13,
+    "revision": 2,
     "volumes": [],
     "status": "ACTIVE",
     "requiresAttributes": [
@@ -50,6 +48,9 @@
             "name": "ecs.capability.execution-role-awslogs"
         },
         {
+            "name": "com.amazonaws.ecs.capability.ecr-auth"
+        },
+        {
             "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
         },
         {
@@ -57,6 +58,9 @@
         },
         {
             "name": "com.amazonaws.ecs.capability.task-iam-role"
+        },
+        {
+            "name": "ecs.capability.execution-role-ecr-pull"
         },
         {
             "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
@@ -82,8 +86,7 @@
         "cpuArchitecture": "ARM64",
         "operatingSystemFamily": "LINUX"
     },
-    "registeredAt": "2025-02-01T22:51:19.761Z",
-    "registeredBy": "arn:aws:iam::766261352911:user/Terraform-Project",
-    "enableFaultInjection": false,
+    "registeredAt": "2024-09-13T18:23:22.476Z",
+    "registeredBy": "arn:aws:iam::489877524855:user/walid-test-threat-modeler",
     "tags": []
 }
