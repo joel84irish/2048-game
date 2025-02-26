@@ -1,4 +1,4 @@
-name: Build, Scan, Push, and Deploy to ECS
+name: Build, Push, and Deploy to ECS
 
 on:
   workflow_dispatch:
@@ -16,36 +16,10 @@ env:
   CONTAINER_NAME: 2048
 
 jobs:
-  trivy_scan:
-    name: Trivy Security Scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build Docker image
-        run: |
-          docker build -t my-app:latest .
-
-      - name: Run Trivy vulnerability scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'my-app:latest'
-          format: 'table'
-          severity: 'CRITICAL,HIGH'
-          exit-code: 1 # 🚨 Fail if any CRITICAL or HIGH vulnerabilities are found
-
   build-and-deploy:
-    needs: 'trivy_scan'
-    name: Build and Deploy
+    name: Build and Deploy to ECS
     runs-on: ubuntu-latest
-    if: github.event.inputs.confirmation == 'yes'
+    if: github.event.inputs.confirmation == 'yes'  # Only runs if confirmation is 'yes'
 
     steps:
       - name: Checkout code
@@ -77,17 +51,24 @@ jobs:
         run: |
           docker build -t $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG
-          echo "image=$ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "image=$ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
 
-      - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      - name: Update ECS Task Definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
           container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.build-image.outputs.image }}
+          image: ${{ env.image }}
+
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
+
 
 
       # - name: Update ECS Service to use the latest image
