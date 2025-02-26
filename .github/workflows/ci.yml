@@ -42,7 +42,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build and Push Docker Image
+      - name: Build Docker Image
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -50,6 +50,23 @@ jobs:
           REPOSITORY: ${{ env.ECR_REPOSITORY }}
         run: |
           docker build -t $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG .
+
+      - name: Scan Docker Image for Vulnerabilities with Trivy
+        run: |
+          # Install Trivy
+          curl -sfL https://github.com/aquasecurity/trivy/releases/download/v0.29.2/trivy_0.29.2_Linux-64bit.tar.gz | tar -xzv
+          sudo mv trivy /usr/local/bin/
+          
+          # Run Trivy scan
+          trivy image $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+      - name: Push Docker Image to ECR
+        id: push-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: latest
+          REPOSITORY: ${{ env.ECR_REPOSITORY }}
+        run: |
           docker push $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
 
