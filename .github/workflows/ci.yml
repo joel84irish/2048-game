@@ -122,32 +122,47 @@ jobs:
   trivy_scan:
     name: 'Trivy Image Scan for Vulnerabilities'
     runs-on: ubuntu-latest
-    needs: build_and_push
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.confirmation == 'yes'
-    env:
-      AWS_REGION: 'us-west-2'  # Explicitly setting the region in env
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install Trivy
-        run: |
-          curl -sfL https://github.com/aquasecurity/trivy/releases/download/v0.29.2/trivy_0.29.2_Linux-64bit.tar.gz | tar -xzv
-          sudo mv trivy /usr/local/bin/
-            
-      - name: Log in to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_DEFAULT_REGION }}  # Ensure the region is set
+          aws-region: us-west-2  # Change to your region if needed
 
-      - name: Scan Docker Image for Vulnerabilities with Trivy
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Pull Docker Image from ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: 2048  # Change to your ECR repo name
+          IMAGE_TAG: latest
         run: |
-          IMAGE_URI="${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest"
-          echo "Scanning image: $IMAGE_URI"
-          trivy image --no-progress --skip-update $IMAGE_URI
+          docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Run Trivy Scan
+        uses: aquasecurity/trivy-action@latest
+        with:
+          image-ref: ${{ steps.login-ecr.outputs.registry }}/2048:latest
+          format: json
+          severity: CRITICAL,HIGH
+          output: trivy-report.json
+
+      - name: Upload Trivy Scan Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: Trivy Scan Report
+          path: trivy-report.json
+
+      - name: Display Scan Summary
+        run: cat trivy-report.json
+
 
 
   terraform_apply:
