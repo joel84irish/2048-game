@@ -134,10 +134,10 @@ jobs:
           sudo mv trivy /usr/local/bin/
 
       - name: Log in to Amazon ECR (for Trivy scan)
-        uses: aws-actions/amazon-ecr-login@v2
         id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
         with:
-          region: 'us-west-2'  # Explicitly pass region here
+          region: ${{ env.AWS_REGION }}        
 
       - name: Scan Docker Image for Vulnerabilities with Trivy
         run: |
