@@ -1,10 +1,10 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:us-west-2:980921749029:task-definition/2048:1",
+    "taskDefinitionArn": "arn:aws:ecs:us-west-2:980921749029:task-definition/2048_game:2",
     "containerDefinitions": [
         {
             "name": "2048",
-            "image": "980921749029.dkr.ecr.us-west-2.amazonaws.com/2048:latest:latest",
-            "cpu": 0,
+            "image": "980921749029.dkr.ecr.us-west-2.amazonaws.com/2048",
+            "cpu": 1024,
             "portMappings": [
                 {
                     "name": "2048-80-tcp",
@@ -16,10 +16,8 @@
             ],
             "essential": true,
             "environment": [],
-            "environmentFiles": [],
             "mountPoints": [],
             "volumesFrom": [],
-            "ulimits": [],
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
@@ -35,11 +33,11 @@
             "systemControls": []
         }
     ],
-    "family": "2048",
+    "family": "2048_game",
     "taskRoleArn": "arn:aws:iam::980921749029:role/ecs_task_role",
     "executionRoleArn": "arn:aws:iam::980921749029:role/ecs_execution_role",
     "networkMode": "awsvpc",
-    "revision": 1,
+    "revision": 2,
     "volumes": [],
     "status": "ACTIVE",
     "requiresAttributes": [
@@ -88,7 +86,7 @@
         "cpuArchitecture": "ARM64",
         "operatingSystemFamily": "LINUX"
     },
-    "registeredAt": "2025-02-26T19:35:57.607Z",
+    "registeredAt": "2025-02-26T21:05:29.508Z",
     "registeredBy": "arn:aws:iam::980921749029:user/Terraform",
     "tags": [
         {
@@ -104,4 +102,5 @@
             "value": "jo"
         }
     ]
+}
 }
