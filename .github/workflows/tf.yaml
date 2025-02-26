@@ -65,7 +65,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4  
 
       - name: Terraform Plan for Test
         working-directory: tf-mods-version  # Set the working directory to the 'terraform' folder
@@ -76,10 +76,11 @@ jobs:
           terraform show -no-color plan-test > plan-test.txt
       
       - name: Upload Terraform Plan Artifact for Test
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  
         with:
           name: plan-test
-          path: terraform/plan-test  # Adjust the path to include the 'terraform' folder
+          path: tf-mods-version/plan-test.txt  #Ensure correct path
+
 
   terraform_apply:
     name: 'Terraform Apply'
