@@ -134,12 +134,14 @@ jobs:
         run: |
           curl -sfL https://github.com/aquasecurity/trivy/releases/download/v0.29.2/trivy_0.29.2_Linux-64bit.tar.gz | tar -xzv
           sudo mv trivy /usr/local/bin/
-
-      - name: Log in to Amazon ECR (for Trivy scan)
+            
+      - name: Log in to Amazon ECR
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-        id: ecr-login
         with:
-          region: ${{ env.AWS_REGION }}  # Use region from env
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}  # Ensure the region is set
 
       - name: Scan Docker Image for Vulnerabilities with Trivy
         run: |
