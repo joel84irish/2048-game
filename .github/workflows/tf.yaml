@@ -15,7 +15,7 @@ permissions:
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  AWS_DEFAULT_REGION: 'us-west-2'
+  AWS_DEFAULT_REGION: 'us-west-2'  
 
 jobs:
   terraform_static_analysis:
@@ -31,7 +31,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}  
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -51,11 +51,10 @@ jobs:
         run: |
           curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
           tflint --version
-
+          
       - name: Terraform Lint
         working-directory: tf-mods-version  # Set the working directory to the 'terraform' folder
         run: tflint
-
   terraform_plan_test:
     name: 'Terraform Plan for Test'
     runs-on: ubuntu-latest
