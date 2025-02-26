@@ -133,11 +133,16 @@ jobs:
           curl -sfL https://github.com/aquasecurity/trivy/releases/download/v0.29.2/trivy_0.29.2_Linux-64bit.tar.gz | tar -xzv
           sudo mv trivy /usr/local/bin/
 
+      - name: Log in to Amazon ECR (for Trivy scan)
+        uses: aws-actions/amazon-ecr-login@v2
+        id: ecr-login
+
       - name: Scan Docker Image for Vulnerabilities with Trivy
         run: |
-          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest"
+          IMAGE_URI="${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest"
           echo "Scanning image: $IMAGE_URI"
-          trivy image $IMAGE_URI
+          trivy image --no-progress --skip-update $IMAGE_URI
+
 
   terraform_apply:
     name: 'Terraform Apply'
