@@ -1,44 +1,85 @@
-name: 'Terraform Destroy CI/CD'
+name: Build, Push, and Deploy to ECS
 
 on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: 'Type "yes" to confirm destruction'
+        description: 'Type "yes" to confirm deployment'
         required: true
         default: 'no'
 
-permissions:
-  contents: read
-
 env:
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  AWS_DEFAULT_REGION: 'eu-west-2'
+  AWS_REGION: us-west-2
+  ECR_REPOSITORY: 2048
+  ECS_SERVICE: 2048-service
+  ECS_CLUSTER: joel-sandbox
+  CONTAINER_NAME: 2048
 
 jobs:
-  terraform_static_analysis:
-    name: 'Terraform Static Analysis'
+  build-and-deploy:
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
 
-  terraform_destroy:
-    name: 'Terraform Destroy'
-    runs-on: ubuntu-latest
-    needs: terraform_static_analysis
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.confirmation == 'yes'
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Terraform Destroy
-        working-directory: tf-mods-version  # Set the working directory to the 'terraform' folder
+      - name: Check if deployment is confirmed
+        if: ${{ github.event.inputs.confirmation != 'yes' }}
         run: |
-          terraform init
-          terraform destroy -auto-approve  # Automatically approve the destroy operation
+          echo "Deployment not confirmed. Exiting."
+          exit 1
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag as latest, and push Docker image to ECR
+        id: build-image
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: 'eu-west-2'
+          ECR_REGISTRY: 980921749029.dkr.ecr.us-west-2.amazonaws.com/2048
+          ECR_REPOSITORY: 2048
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:latest" >> $GITHUB_OUTPUT
+
+      # - name: Update ECS Service to use the latest image
+      #   run: |
+      #     aws ecs update-service \
+      #       --cluster ${{ env.ECS_CLUSTER }} \
+      #       --service ${{ env.ECS_SERVICE }} \
+      #       --force-new-deployment \
+      #       --output json
+
+      # - name: Fill in the new image ID in the Amazon ECS task definition
+      #   id: task-def
+      #   uses: aws-actions/amazon-ecs-render-task-definition@v1
+      #   with:
+      #     task-definition: task-definition.json
+      #     container-name: tmc
+      #     image: ${{ steps.build-image.outputs.image }}
+
+      # - name: Deploy Amazon ECS task definition
+      #   uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a
+      #   with:
+      #     task-definition: ${{ steps.task-def.outputs.task-definition }}
+      #     service: ${{ env.ECS_SERVICE }}
+      #     cluster: ${{ env.ECS_CLUSTER }}
+      #     wait-for-service-stability: true
+
+
+
+      
