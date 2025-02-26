@@ -25,7 +25,7 @@ resource "aws_lb_target_group" "2048_target_group" {
 }
 
 resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.tm_alb.arn
+  load_balancer_arn = aws_lb.2048_alb.arn
   port              = "80"
   protocol          = "HTTP"
 
@@ -45,7 +45,7 @@ resource "aws_lb_listener" "https" {
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = aws_acm_certificate.tm_cert.arn
+  certificate_arn   = aws_acm_certificate.2048_cert.arn
 
   default_action {
     type             = "forward"
@@ -72,7 +72,7 @@ resource "aws_lb_listener" "http_redirect" {
 }
 
 resource "aws_security_group" "alb" {
-  name        = "alb-sg"
+  name        = "2048-sg"
   description = "Security group for ALB"
   vpc_id      = aws_vpc.main.id
 
