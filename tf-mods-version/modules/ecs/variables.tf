@@ -5,7 +5,7 @@ variable "cluster_name" {
 
 variable "task_family" {
   description = "Family name of the ECS task definition"
-  default     = "tm"
+  default     = "2048"
 }
 
 variable "task_cpu" {
@@ -20,7 +20,7 @@ variable "task_memory" {
 
 variable "container_name" {
   description = "Name of the container"
-  default     = "tmc"
+  default     = "2048"
 }
 
 variable "ecr_repo_url" {
@@ -34,7 +34,7 @@ variable "image_tag" {
 
 variable "container_port" {
   description = "Port exposed by the container"
-  default     = 3000
+  default     = 80
 }
 
 variable "aws_region" {
@@ -53,7 +53,7 @@ variable "os_family" {
 
 variable "service_name" {
   description = "Name of the ECS service"
-  default     = "tm-service"
+  default     = "2048-service"
 }
 
 variable "desired_count" {
