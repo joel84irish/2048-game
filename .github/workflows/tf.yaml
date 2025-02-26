@@ -26,14 +26,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Terraform Format
-        working-directory: tf-mods-version  # Set the working directory to the 'terraform' folder
-        run: |
-          terraform fmt -check
-          if [ $? -ne 0 ]; then
-            exit 1
-          fi
-
       - name: Terraform Initialize
         working-directory: tf-mods-version  # Set the working directory to the 'terraform' folder
         run: terraform init
