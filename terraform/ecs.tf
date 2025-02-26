@@ -1,5 +1,5 @@
-resource "aws_ecs_cluster" "tm" {
-  name = "joel-sandbox"
+resource "aws_ecs_cluster" "2048" {
+  name = "2048-sandbox"
 
   setting {
     name  = "containerInsights"
@@ -12,8 +12,8 @@ resource "aws_ecs_cluster" "tm" {
 }
 
 
-resource "aws_ecs_task_definition" "tm_task" {
-  family                   = "tm"
+resource "aws_ecs_task_definition" "2048_task" {
+  family                   = "2048"
   cpu                      = "1024"
   memory                   = "3072"
   network_mode             = "awsvpc"
@@ -24,21 +24,21 @@ resource "aws_ecs_task_definition" "tm_task" {
   container_definitions = jsonencode([
     {
       name      = "tmc"
-      image     = "980921749029.dkr.ecr.us-west-2.amazonaws.com/threat-model:latest"
+      image     = "980921749029.dkr.ecr.us-west-2.amazonaws.com/2048:latest"
       cpu       = 0
       essential = true
       portMappings = [{
-        containerPort = 3000
-        hostPort      = 3000
+        containerPort = 80
+        hostPort      = 80
         protocol      = "tcp"
-        name          = "tmc-3000-tcp"
+        name          = "2048-80-tcp"
         appProtocol   = "http"
       }]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          awslogs-group         = "/ecs/tm"
-          awslogs-region        = "eu-west-2"
+          awslogs-group         = "/ecs/2048"
+          awslogs-region        = "us-west-2"
           awslogs-stream-prefix = "ecs"
           mode                  = "non-blocking"
           awslogs-create-group  = "true"
@@ -63,10 +63,10 @@ resource "aws_ecs_task_definition" "tm_task" {
 
 
 
-resource "aws_ecs_service" "tm_service" {
-  name            = "tm-service"
-  cluster         = aws_ecs_cluster.tm.id
-  task_definition = aws_ecs_task_definition.tm_task.arn
+resource "aws_ecs_service" "2048_service" {
+  name            = "2048-service"
+  cluster         = aws_ecs_cluster.2048.id
+  task_definition = aws_ecs_task_definition.2048_task.arn
   desired_count   = 1
   launch_type     = "FARGATE"
 
@@ -94,8 +94,8 @@ resource "aws_ecs_service" "tm_service" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.tm_target_group.arn
-    container_name   = "tmc"
-    container_port   = 3000
+    container_name   = "2048"
+    container_port   = 80
   }
 
   deployment_controller {
