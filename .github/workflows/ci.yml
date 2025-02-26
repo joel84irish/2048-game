@@ -122,7 +122,6 @@ jobs:
   trivy_scan:
     name: 'Trivy Image Scan for Vulnerabilities'
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
