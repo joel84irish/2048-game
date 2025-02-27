@@ -145,21 +145,9 @@ jobs:
         run: docker pull $ECR_REGISTRY/2048:$IMAGE_TAG
 
       - name: Run Trivy Scan
-        uses: aquasecurity/trivy-action@0.14.0
-        with:
-          image-ref: 980921749029.dkr.ecr.us-west-2.amazonaws.com/2048:latest
-          format: table
-          severity: CRITICAL,HIGH
-          output: trivy-report.txt
-
-      - name: Run Trivy Scan
-        uses: aquasecurity/trivy-action@0.14.0  # Updated with specific version
-        with:
-          image: ${{ steps.login-ecr.outputs.registry }}/2048-game:latest
-          format: table
-          severity: CRITICAL,HIGH
-          output: trivy-report.txt
-
+        run: |
+          trivy image --format table --vuln-type os,library --severity CRITICAL,HIGH --output trivy-report.txt 980921749029.dkr.ecr.us-west-2.amazonaws.com/2048:latest
+        
       - name: Upload Trivy Scan Report
         uses: actions/upload-artifact@v4
         with:
