@@ -120,9 +120,9 @@ jobs:
           echo "image=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG" >> $GITHUB_ENV
   
   trivy_scan:
-    needs: build_and_push  # Ensures image exists before scanning
     name: 'Trivy Image Scan for Vulnerabilities'
     runs-on: ubuntu-latest
+    needs: build_and_push  # Ensures image exists before scanning
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -130,11 +130,18 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-region: us-west-2  # Change to your ECR region
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
 
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Verify Image Exists in ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: aws ecr describe-images --repository-name 2048 --image-ids imageTag=latest
 
       - name: Pull Docker Image from ECR
         env:
@@ -145,19 +152,19 @@ jobs:
       - name: Run Trivy Scan
         uses: aquasecurity/trivy-action@latest
         with:
-          image-ref: ${{ steps.login-ecr.outputs.registry }}/2048:latest
-          format: json
+          image: ${{ steps.login-ecr.outputs.registry }}/2048:latest
+          format: table  # Use table for easier debugging
           severity: CRITICAL,HIGH
-          output: trivy-report.json
+          output: trivy-report.txt
 
       - name: Upload Trivy Scan Report
         uses: actions/upload-artifact@v4
         with:
           name: Trivy Scan Report
-          path: trivy-report.json
+          path: trivy-report.txt
 
       - name: Display Scan Summary
-        run: cat trivy-report.json
+        run: cat trivy-repo
 
 
 
