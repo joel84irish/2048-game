@@ -33,8 +33,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: latest  # Or specify a version like '1.6.0'
+
       - name: Terraform Destroy
-        working-directory: tf-mods-version  # Set the working directory to the 'terraform' folder
+        working-directory: tf-mods-version  # Set the working directory to the Terraform folder
         run: |
           terraform init
           terraform destroy -auto-approve  # Automatically approve the destroy operation
