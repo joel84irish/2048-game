@@ -17,8 +17,22 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   AWS_DEFAULT_REGION: 'us-west-2'  # Define region here as a fallback
   ECR_REPOSITORY: 2048
+    
   
 jobs:
+  Slack_Notifications:
+    name: Slack Notifications
+    runs-on: ubuntu-latest
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    steps:
+    - uses: act10ns/slack@v2
+      with:
+        status: starting
+        channel: '#Joel-DevOps'
+        message: Starting CI/CD Pipeline...
+        if: always()     
+        
   terraform_static_analysis:
     name: 'Terraform Static Analysis'
     runs-on: ubuntu-latest
@@ -64,8 +78,8 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
+        uses: actions/checkout@v4 
+        
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -108,8 +122,8 @@ jobs:
 
       - name: Log in to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2  # Remove aws-region input
-       
+        uses: aws-actions/amazon-ecr-login@v2  # Remove aws-region input     
+        
       - name: Build and Push Docker Image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -162,10 +176,6 @@ jobs:
       - name: Display Scan Summary
         run: cat trivy-report.txt
 
-
-
-
-
   terraform_apply:
     name: 'Terraform Apply'
     runs-on: ubuntu-latest
@@ -192,6 +202,15 @@ jobs:
         run: |
           terraform init
           terraform apply -auto-approve
+          
+      - name: Slack - GitHub Notifications
+      - uses: act10ns/slack@v2
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+          channel: '#Joel-DevOps'
+          message: CI/CD Pipeline Completed
+        if: always()          
           
       # - name: Update ECS Service to use the latest image
       #   run: |
