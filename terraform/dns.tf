@@ -1,5 +1,5 @@
-data "aws_route53_zone" "2048" {
-  name = "2048.joelirish-game-project.app"
+data "aws_route53_zone" "lab" {
+  name = "lab.joelirish-game-project.app"
 }
 
 resource "aws_route53_record" "2048" {
@@ -16,7 +16,7 @@ resource "aws_route53_record" "2048" {
 
 ## HTTPS/DNS
 resource "aws_acm_certificate" "tm_cert" {
-  domain_name       = "2048.joelirish-game-project.app
+  domain_name       = "tm.lab.2048.joelirish.app
   validation_method = "DNS"
 
   lifecycle {
@@ -42,6 +42,6 @@ resource "aws_route53_record" "2048_cert_validation" {
 }
 
 resource "aws_acm_certificate_validation" "tm_cert" {
-  certificate_arn         = aws_acm_certificate.2048_cert.arn
+  certificate_arn         = aws_acm_certificate.tm_cert.arn
   validation_record_fqdns = [for record in aws_route53_record.2048_cert_validation : record.fqdn]
 }
