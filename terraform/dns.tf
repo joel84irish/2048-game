@@ -1,5 +1,5 @@
 data "aws_route53_zone" "lab" {
-  name = "lab.joelirish-game-project.app"
+  name = "lab.joelirish.app"
 }
 
 resource "aws_route53_record" "2048" {
