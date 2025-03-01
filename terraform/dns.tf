@@ -8,14 +8,14 @@ resource "aws_route53_record" "2048" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.2048_alb.dns_name
-    zone_id                = aws_lb.2048_alb.zone_id
+    name                   = aws_lb.tm_alb.dns_name
+    zone_id                = aws_lb.tm_alb.zone_id
     evaluate_target_health = true
   }
 }
 
 ## HTTPS/DNS
-resource "aws_acm_certificate" "2048_cert" {
+resource "aws_acm_certificate" "tm_cert" {
   domain_name       = "2048.joelirish-game-project.app
   validation_method = "DNS"
 
