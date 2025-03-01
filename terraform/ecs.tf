@@ -23,7 +23,7 @@ resource "aws_ecs_task_definition" "2048_task" {
 
   container_definitions = jsonencode([
     {
-      name      = "tmc"
+      name      = "2048"
       image     = "980921749029.dkr.ecr.us-west-2.amazonaws.com/2048:latest"
       cpu       = 0
       essential = true
