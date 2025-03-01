@@ -20,8 +20,8 @@ jobs:
       name: Deploy
       uses: bitovi/github-actions-deploy-prometheus@main
       with:
-        aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID_SANDBOX}}
-        aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_SANDBOX}}
+        aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID}}
+        aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
         env_ghs: ${{ secrets.DOT_ENV_SANDBOX }}
         aws_default_region: us-west-2
 
