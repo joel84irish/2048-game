@@ -205,6 +205,14 @@ jobs:
           terraform init
           terraform apply -auto-approve
 
+  Slack_Notifications_Complete:
+    name: Slack Notifications (Complete)
+    runs-on: ubuntu-latest
+    if: always()  # Runs no matter what (ensure the notification is sent)
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    needs: terraform_apply  # Ensure this runs after the apply step
+    steps:
       - name: Notify Slack - CI/CD Pipeline Completed
         uses: act10ns/slack@v2
         with:
@@ -212,8 +220,7 @@ jobs:
           channel: '#Joel-DevOps'
           message: 'CI/CD Pipeline Completed'
           steps: ${{ toJson(steps) }}
-        if: always()  
-  
+        if: always()  # Ensure this runs regardless of job success/failure  
      
       # - name: Update ECS Service to use the latest image
       #   run: |
