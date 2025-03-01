@@ -31,7 +31,7 @@ resource "aws_ecs_task_definition" "2048_task" {
         containerPort = 80
         hostPort      = 80
         protocol      = "tcp"
-        name          = "2048-80-tcp"
+        name          = "tmc-80-tcp"
         appProtocol   = "http"
       }]
       logConfiguration = {
