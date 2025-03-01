@@ -1,0 +1,34 @@
+name: Deploy Prometheus Sandbox
+
+on:
+    push:
+      branches: [ main ]
+      paths:
+      - '.github/workflows/deploy-sandbox.yaml'
+      - 'observability/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref_name }}
+      url: ${{ steps.deploy.outputs.lb_url }}
+
+    steps:
+    # Bitovi's Deploy Pixel Tracker
+    - id: deploy
+      name: Deploy
+      uses: bitovi/github-actions-deploy-prometheus@main
+      with:
+        aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID_SANDBOX}}
+        aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_SANDBOX}}
+        env_ghs: ${{ secrets.DOT_ENV_SANDBOX }}
+        aws_default_region: us-west-2
+
+        aws_ec2_instance_type: t2.small
+        
+        # observability config
+        grafana_datasource_dir: sandbox/observability/grafana/datasources
+        prometheus_config: sandbox/observability/prometheus/prometheus.yml
+
+        # tf_stack_destroy: true
