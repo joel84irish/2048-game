@@ -37,6 +37,7 @@ jobs:
   terraform_static_analysis:
     name: 'Terraform Static Analysis'
     runs-on: ubuntu-latest
+    needs: 'Slack_Notifications'
     if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     defaults:
       run:
