@@ -23,6 +23,7 @@ jobs:
   Slack_Notifications:
     name: Slack Notifications
     runs-on: ubuntu-latest
+    if: always()  
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     steps:
@@ -31,7 +32,7 @@ jobs:
         status: starting
         channel: '#Joel-DevOps'
         message: Starting CI/CD Pipeline...
-        if: always()     
+         
         
   terraform_static_analysis:
     name: 'Terraform Static Analysis'
@@ -202,16 +203,17 @@ jobs:
         run: |
           terraform init
           terraform apply -auto-approve
-          
-      - name: Slack - GitHub Notifications
-      - uses: act10ns/slack@v2
+
+      - name: Notify Slack - CI/CD Pipeline Completed
+        uses: act10ns/slack@v2
         with:
           status: ${{ job.status }}
-          steps: ${{ toJson(steps) }}
           channel: '#Joel-DevOps'
-          message: CI/CD Pipeline Completed
-        if: always()          
-          
+          message: 'CI/CD Pipeline Completed'
+          steps: ${{ toJson(steps) }}
+        if: always()  
+  
+     
       # - name: Update ECS Service to use the latest image
       #   run: |
       #     aws ecs update-service \
