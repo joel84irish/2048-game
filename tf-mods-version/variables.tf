@@ -12,7 +12,7 @@ variable "domain_name" {
 
 variable "ecr_repo_url" {
   description = "The URL of the ECR repository"
-  default     = "980921749029.dkr.ecr.us-west-2.amazonaws.com/2048:latest"
+  default     = "980921749029.dkr.ecr.us-west-2.amazonaws.com/threat-model:latest"
   type        = string
 }
 
