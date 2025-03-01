@@ -16,7 +16,7 @@ resource "aws_route53_record" "2048" {
 
 ## HTTPS/DNS
 resource "aws_acm_certificate" "tm_cert" {
-  domain_name       = "tm.lab.2048.joelirish.app
+  domain_name       = "tm.lab.joelirish.app
   validation_method = "DNS"
 
   lifecycle {
