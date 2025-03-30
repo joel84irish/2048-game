@@ -15,63 +15,48 @@ permissions:
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  AWS_DEFAULT_REGION: 'us-west-2'  # Define region here as a fallback
-  ECR_REPOSITORY: 2048
-    
-  
+  AWS_DEFAULT_REGION: 'us-west-2'
+  ECR_REPOSITORY: tm
+
 jobs:
   Slack_Notifications:
     name: Slack Notifications
     runs-on: ubuntu-latest
-    if: always()  
+    if: always()
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     steps:
-    - uses: act10ns/slack@v2
-      with:
-        status: starting
-        channel: '#Joel-DevOps'
-        message: Starting CI/CD Pipeline...
-         
-        
+      - uses: act10ns/slack@v2
+        with:
+          status: starting
+          channel: '#Joel-DevOps'
+          message: Starting CI/CD Pipeline...
+
   terraform_static_analysis:
     name: 'Terraform Static Analysis'
     runs-on: ubuntu-latest
-    needs: 'Slack_Notifications'
+    needs: Slack_Notifications
     if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     defaults:
       run:
         working-directory: tf-mods-version
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      - uses: actions/checkout@v3
+      - uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+      - uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.0.1
           terraform_wrapper: false
-
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Validate
-        run: terraform validate
-
-      - name: Install tflint
-        run: |
+      - run: terraform init
+      - run: terraform validate
+      - run: |
           curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
           tflint --version
-
-      - name: Terraform Lint
-        run: tflint
+      - run: tflint
 
   terraform_plan_test:
     name: 'Terraform Plan for Test'
@@ -79,30 +64,21 @@ jobs:
     needs: terraform_static_analysis
     if: github.event_name == 'workflow_dispatch'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4 
-        
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+      - uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.6.0
-
-      - name: Terraform Plan for Test
-        working-directory: tf-mods-version
-        run: |
+      - run: |
           terraform init
           terraform plan -out=plan-test
           terraform show -no-color plan-test > plan-test.txt
-
-      - name: Upload Terraform Plan Artifact for Test
-        uses: actions/upload-artifact@v4
+        working-directory: tf-mods-version
+      - uses: actions/upload-artifact@v4
         with:
           name: plan-test
           path: tf-mods-version/plan-test.txt
@@ -112,71 +88,51 @@ jobs:
     runs-on: ubuntu-latest
     needs: terraform_plan_test
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials  # Ensure AWS credentials are set before logging in
-        uses: aws-actions/configure-aws-credentials@v2
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
-
-      - name: Log in to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2  # Remove aws-region input     
-        
-      - name: Build and Push Docker Image
-        env:
+      - id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: latest
         run: |
           docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG .
           docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG" >> $GITHUB_ENV
-  
+
   trivy_scan:
     name: 'Trivy Image Scan for Vulnerabilities'
     runs-on: ubuntu-latest
     needs: build_and_push
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
-
-      - name: Log in to Amazon ECR
-        id: login-ecr
+      - id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Pull Docker Image from ECR
-        env:
+      - env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: latest
         run: docker pull $ECR_REGISTRY/2048:$IMAGE_TAG
-        
-      - name: Run Trivy Scan
-        uses: aquasecurity/trivy-action@0.14.0
+      - uses: aquasecurity/trivy-action@0.14.0
         with:
-         image-ref: 980921749029.dkr.ecr.us-west-2.amazonaws.com/2048:latest
-         format: table
-         vuln-type: os,library
-         severity: CRITICAL,HIGH
-         output: trivy-report.txt
- 
-      - name: Upload Trivy Scan Report
-        uses: actions/upload-artifact@v4
+          image-ref: public.ecr.aws/c7u5x4r5/tm:latest
+          format: table
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+          output: trivy-report.txt
+      - uses: actions/upload-artifact@v4
         with:
           name: Trivy Scan Report
           path: trivy-report.txt
-
-      - name: Display Scan Summary
-        run: cat trivy-report.txt
+      - run: cat trivy-report.txt
 
   terraform_apply:
     name: 'Terraform Apply'
@@ -184,43 +140,35 @@ jobs:
     needs: trivy_scan
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.confirmation == 'yes'
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+      - uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.6.0
-
-      - name: Terraform Apply
-        working-directory: tf-mods-version
-        run: |
+      - run: |
           terraform init
           terraform apply -auto-approve
+        working-directory: tf-mods-version
 
   Slack_Notifications_Complete:
     name: Slack Notifications (Complete)
     runs-on: ubuntu-latest
-    if: always()  # Runs no matter what (ensure the notification is sent)
+    needs: terraform_apply
+    if: always()
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-    needs: terraform_apply  # Ensure this runs after the apply step
     steps:
-      - name: Notify Slack - CI/CD Pipeline Completed
-        uses: act10ns/slack@v2
+      - uses: act10ns/slack@v2
         with:
           status: ${{ job.status }}
           channel: '#Joel-DevOps'
           message: 'CI/CD Pipeline Completed'
-          steps: ${{ toJson(steps) }}
-        if: always()  # Ensure this runs regardless of job success/failure  
+        if: always()
+ 
      
       # - name: Update ECS Service to use the latest image
       #   run: |
